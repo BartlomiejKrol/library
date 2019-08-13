@@ -45,11 +45,15 @@ object BookRepositoryInterpreter extends (BookRepositoryA ~> Option) {
     }
 
     case FindBy(titleOpt, yearOpt, authorOpt) =>
-      repository.values.toList
+      repository.values
         .filter(book => titleOpt.forall(_ == book.title))
         .filter(book => yearOpt.forall(_ == book.year))
         .filter(book => authorOpt.forall(_ == book.author))
+        .toList
         .some
+
+    case ListBooksDistinctly() =>
+      repository.values.groupBy(book => (book.title, book.year, book.author) )
 
   }
 }

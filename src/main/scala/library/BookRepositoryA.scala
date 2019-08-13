@@ -16,4 +16,4 @@ case class FindAll() extends BookRepositoryA[List[Book]]
 
 case class FindBy(title: Option[String], year: Option[Int], author: Option[String]) extends BookRepositoryA[List[Book]]
 
-
+case class ListBooksDistinctly() extends BookRepositoryA[Unit]

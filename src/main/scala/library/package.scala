@@ -21,4 +21,6 @@ package object library {
               year: Option[Int] = None,
               author: Option[String] = None
             ): BookRepository[List[Book]] = liftF[BookRepositoryA, List[Book]](FindBy(title, year, author))
+
+  def listBooksDistinctly(): BookRepository[Unit] = liftF[BookRepositoryA, Unit](ListBooksDistinctly())
 }
