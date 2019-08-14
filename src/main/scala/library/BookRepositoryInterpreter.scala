@@ -66,7 +66,7 @@ class BookRepositoryInterpreter(val repository: TrieMap[String, Book]) extends (
           case Lent(user) => s"lent by user $user"
           case _ => "unknown"
         }
-        println(s" id: $id,  title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status $status")
+        println(s" id: $id,  title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status $status\n")
       }).some
     }
 
@@ -84,7 +84,7 @@ class BookRepositoryInterpreter(val repository: TrieMap[String, Book]) extends (
               case Lent(_) => (args._1, args._2 + 1)
               case _ => args
             }))
-          .foreach(entry => println(s"title: ${entry._1._1}, year: ${entry._1._2}, auhtor: ${entry._1._3}, available: ${entry._2._1}, lent: ${entry._1._2}"))
+          .foreach(entry => println(s"title: ${entry._1._1}, year: ${entry._1._2}, author: ${entry._1._3}, available: ${entry._2._1}, lent: ${entry._1._2}\n"))
           .some
       }
 
@@ -94,7 +94,7 @@ class BookRepositoryInterpreter(val repository: TrieMap[String, Book]) extends (
         case Lent(user) => s"lent by user: $user"
         case _ => "status is missing"
       }
-      print(s"title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status: $status").some
+      print(s"title: ${book.title}, year: ${book.year}, author: ${book.author}, status: $status\n").some
 
     case GetAvailable(book: Book) => book.status match {
       case Available => book.some
