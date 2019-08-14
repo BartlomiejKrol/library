@@ -93,12 +93,22 @@ class Library() {
     action.foldMap(repositoryInterpreter)
   }
 
-  def lentBook(id: UUID, by: String): Option[Book] = {
+  def lentBook(id: String, by: String): Option[Book] = {
+    val uuid = UUID.fromString(id)
     val action = for {
-      existing <- findById(id)
+      existing <- findById(uuid)
       available <- getAvailable(existing)
       updated <- update(available.copy(status = Lent(by)))
     } yield  updated
+    action.foldMap(repositoryInterpreter)
+  }
+
+  def getBookDetails(id: String): Option[Book] = {
+    val uuid = UUID.fromString(id)
+    val action = for {
+      book <- findById(uuid)
+      _ <- showOneBook(book)
+    } yield book
     action.foldMap(repositoryInterpreter)
   }
 }
