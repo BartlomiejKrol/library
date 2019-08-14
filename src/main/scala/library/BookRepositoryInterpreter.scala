@@ -46,7 +46,7 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
       }
     }
 
-    case FindBy(titleOpt, yearOpt, authorOpt, books: List[Book]) =>
+    case FindBy(titleOpt, yearOpt, authorOpt) =>
       repository.values
         .filter(book => titleOpt.forall(_ == book.title))
         .filter(book => yearOpt.forall(_ == book.year))
