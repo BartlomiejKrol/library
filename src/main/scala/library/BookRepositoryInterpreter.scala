@@ -2,14 +2,12 @@ package library
 
 import java.util.UUID
 
-import cats.~>
 import cats.implicits._
+import cats.~>
 
 import scala.collection.concurrent.TrieMap
 
-object BookRepositoryInterpreter extends (BookRepositoryA ~> Option) {
-
-  val repository = new TrieMap[UUID, Book]
+class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (BookRepositoryA ~> Option) {
 
   override def apply[A](fa: BookRepositoryA[A]): Option[A] = fa match {
     case Save(book) => {
@@ -52,8 +50,27 @@ object BookRepositoryInterpreter extends (BookRepositoryA ~> Option) {
         .toList
         .some
 
-    case ListBooksDistinctly() =>
-      repository.values.groupBy(book => (book.title, book.year, book.author) )
+    case ShowBooks(books) =>
+      books
+        .groupBy(book => (book.title, book.year, book.author))
+        .view.mapValues(
+        _.foldRight((0, 0): (Int, Int))(
+          (book: Book, args: (Int, Int)) => book.status match {
+            case Available => (args._1 + 1, args._2)
+            case Lent(_) => (args._1, args._2 + 1)
+            case _ => args
+          }))
+        .foreach(entry => println(s"title: ${entry._1._1}, year: ${entry._1._2}, auhtor: ${entry._1._3}, available: ${entry._2._1}, lent: ${entry._1._2}"))
+        .some
+
+    case ShowOneBook(book: Book) =>
+      val status = book.status match {
+        case Available => "available"
+        case Lent(user) => s"lent by user: $user"
+        case _ => "status is missing"
+      }
+      print(s"title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status: $status").some
+
 
   }
 }
