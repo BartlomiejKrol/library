@@ -1,13 +1,10 @@
 package library
 
-import java.util.UUID
-
 import cats.implicits._
 
 import scala.collection.concurrent.TrieMap
 
-class Library() {
-  val repositoryInterpreter = new BookRepositoryInterpreter(new TrieMap[UUID, Book])
+class Library(val repositoryInterpreter: BookRepositoryInterpreter = new BookRepositoryInterpreter(new TrieMap[String, Book])) {
 
   def addBook(title: String, year: Int, author: String): Option[Book] = {
     val book = Book(title, year, author)
@@ -19,11 +16,10 @@ class Library() {
   }
 
   def removeBook(id: String): Option[Book] = {
-    val uuid = UUID.fromString(id)
     val action = for {
-      existing <- findById(uuid)
+      existing <- findById(id)
       _ <- getAvailable(existing)
-      removed <- removeById(uuid)
+      removed <- removeById(id)
     } yield removed
     action.foldMap(repositoryInterpreter)
   }
@@ -94,19 +90,17 @@ class Library() {
   }
 
   def lentBook(id: String, by: String): Option[Book] = {
-    val uuid = UUID.fromString(id)
     val action = for {
-      existing <- findById(uuid)
+      existing <- findById(id)
       available <- getAvailable(existing)
       updated <- update(available.copy(status = Lent(by)))
-    } yield  updated
+    } yield updated
     action.foldMap(repositoryInterpreter)
   }
 
   def getBookDetails(id: String): Option[Book] = {
-    val uuid = UUID.fromString(id)
     val action = for {
-      book <- findById(uuid)
+      book <- findById(id)
       _ <- showOneBook(book)
     } yield book
     action.foldMap(repositoryInterpreter)

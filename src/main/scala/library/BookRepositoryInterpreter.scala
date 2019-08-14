@@ -7,11 +7,11 @@ import cats.~>
 
 import scala.collection.concurrent.TrieMap
 
-class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (BookRepositoryA ~> Option) {
+class BookRepositoryInterpreter(val repository: TrieMap[String, Book]) extends (BookRepositoryA ~> Option) {
 
   override def apply[A](fa: BookRepositoryA[A]): Option[A] = fa match {
     case Save(book) => {
-      val id = UUID.randomUUID()
+      val id = UUID.randomUUID().toString
       val entity = book.copy(id = id.some)
       if (repository.contains(id)) {
         None
@@ -28,7 +28,9 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
       case _ => None
     }
 
-    case FindById(id) => repository.get(id)
+    case FindById(id) => {
+      repository.get(id)
+    }
 
     case RemoveById(id) => repository.get(id) match {
       case Some(book) => {
