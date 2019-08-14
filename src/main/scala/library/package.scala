@@ -24,5 +24,9 @@ package object library {
 
   def showBooks(books: List[Book]): BookRepository[Unit] = liftF[BookRepositoryA, Unit](ShowBooks(books))
 
+  def showBooksDistinct(books: List[Book]): BookRepository[Unit] = liftF[BookRepositoryA, Unit](ShowBooksDistinct(books))
+
   def showOneBook(book: Book): BookRepository[Unit] = liftF[BookRepositoryA, Unit](ShowOneBook(book))
+
+  def getAvailable(book: Book): BookRepository[Book] = liftF[BookRepositoryA, Book](GetAvailable(book))
 }

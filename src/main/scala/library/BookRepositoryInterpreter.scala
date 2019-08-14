@@ -28,9 +28,9 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
       case _ => None
     }
 
-    case FindById(id: UUID) => repository.get(id)
+    case FindById(id) => repository.get(id)
 
-    case RemoveById(id: UUID) => repository.get(id) match {
+    case RemoveById(id) => repository.get(id) match {
       case Some(book) => {
         repository.remove(id)
         book.some
@@ -39,10 +39,14 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
     }
 
     case FindAll() => {
-      repository.values.toList.some
+      if (repository.values.isEmpty) {
+        None
+      } else {
+        repository.values.toList.some
+      }
     }
 
-    case FindBy(titleOpt, yearOpt, authorOpt) =>
+    case FindBy(titleOpt, yearOpt, authorOpt, books: List[Book]) =>
       repository.values
         .filter(book => titleOpt.forall(_ == book.title))
         .filter(book => yearOpt.forall(_ == book.year))
@@ -50,18 +54,37 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
         .toList
         .some
 
-    case ShowBooks(books) =>
-      books
-        .groupBy(book => (book.title, book.year, book.author))
-        .view.mapValues(
-        _.foldRight((0, 0): (Int, Int))(
-          (book: Book, args: (Int, Int)) => book.status match {
-            case Available => (args._1 + 1, args._2)
-            case Lent(_) => (args._1, args._2 + 1)
-            case _ => args
-          }))
-        .foreach(entry => println(s"title: ${entry._1._1}, year: ${entry._1._2}, auhtor: ${entry._1._3}, available: ${entry._2._1}, lent: ${entry._1._2}"))
-        .some
+    case ShowBooks(books) => if (books.isEmpty) {
+      None
+    } else {
+      books.foreach(book => {
+        val id = book.id.map(_.toString).getOrElse("missing")
+        val status = book.status match {
+          case Available => "available"
+          case Lent(user) => s"lent by user $user"
+          case _ => "unknown"
+        }
+        println(s" id: $id,  title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status $status")
+      }).some
+    }
+
+    case ShowBooksDistinct(books) =>
+      if (books.isEmpty) {
+        None
+      }
+      else {
+        books
+          .groupBy(book => (book.title, book.year, book.author))
+          .view.mapValues(
+          _.foldRight((0, 0): (Int, Int))(
+            (book: Book, args: (Int, Int)) => book.status match {
+              case Available => (args._1 + 1, args._2)
+              case Lent(_) => (args._1, args._2 + 1)
+              case _ => args
+            }))
+          .foreach(entry => println(s"title: ${entry._1._1}, year: ${entry._1._2}, auhtor: ${entry._1._3}, available: ${entry._2._1}, lent: ${entry._1._2}"))
+          .some
+      }
 
     case ShowOneBook(book: Book) =>
       val status = book.status match {
@@ -71,6 +94,10 @@ class BookRepositoryInterpreter(val repository: TrieMap[UUID, Book]) extends (Bo
       }
       print(s"title: ${book.title}, year: ${book.year}, auhtor: ${book.author}, status: $status").some
 
+    case GetAvailable(book: Book) => book.status match {
+      case Available => book.some
+      case _ => None
+    }
 
   }
 }

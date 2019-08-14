@@ -1,5 +1,7 @@
 package library
 
+import org.scalatest.FlatSpec
+
 class LibrarySpec extends FlatSpec {
 
   "At the beginning library" should "contains no books" in {}
