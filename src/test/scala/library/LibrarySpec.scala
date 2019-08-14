@@ -71,16 +71,17 @@ class LibrarySpec extends FlatSpec {
     assert(testSubject.getBookDetails(idLent).contains(testLentBook))
   }
 
-  "The existing, not lent book" should "be removable from the library by id" in {
+  "A book" should "be removable from the library by id only if exist and is not lent" in {
     val startState = new TrieMap[String, Book]
     val id = testBookWithId1.id.get
     startState.addOne((id, testBookWithId1))
     val interpreter = new BookRepositoryInterpreter(startState)
     val testSubject = new Library(interpreter)
     assert(testSubject.removeBook(id).contains(testBookWithId1))
+    assert(testSubject.removeBook("not existing id").isEmpty)
   }
 
-  "The existing lent book" should " not be removable from the library" in {
+  it  should "not be removable from the library if lent" in {
     val startState = new TrieMap[String, Book]
     val id = testLentBook.id.get
     startState.addOne((id, testLentBook))
@@ -88,12 +89,5 @@ class LibrarySpec extends FlatSpec {
     val testSubject = new Library(interpreter)
     assert(testSubject.removeBook(id).isEmpty)
   }
-
-  "Removing non existing book" should "not be possible" in {
-    val testSubject = new Library()
-    testSubject.removeBook("1")
-    assert(testSubject.listAllBooks().isEmpty)
-  }
-
 
 }
